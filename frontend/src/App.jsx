@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import CountUp from "react-countup"; // animate numbers
+import CountUp from "react-countup";
 import PayPalButton from "./PayPalButton";
 
 export default function Home() {
@@ -24,9 +24,11 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [paid, setPaid] = useState(false);
   const [leaderboard, setLeaderboard] = useState([]);
-  const unlockedAmount = Math.floor((openedZeros.length / totalZeros) * totalJackpot);
 
-  // Fetch zeros & leaderboard every 5 seconds
+  const unlockedAmount = Math.floor((openedZeros.length / totalZeros) * totalJackpot);
+  const progressPercent = (openedZeros.length / totalZeros) * 100;
+
+  // Fetch zeros & leaderboard every 5 sec
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -80,11 +82,43 @@ export default function Home() {
         Million Zero Vault
       </h1>
 
+      {/* Jackpot Display */}
       <div className="text-center mb-6">
         <h2 className="text-3xl font-bold text-yellow-600">
           Jackpot: <CountUp end={unlockedAmount} duration={1.5} separator="," prefix="$" />
         </h2>
         <p className="text-gray-700">{openedZeros.length} / {totalZeros} zeros opened</p>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="w-full max-w-xl bg-gray-200 h-8 rounded-full mb-6 relative overflow-hidden shadow">
+        <div
+          className="bg-yellow-500 h-8 rounded-full transition-all duration-1000"
+          style={{ width: `${progressPercent}%` }}
+        />
+        {/* Zero markers */}
+        {Array.from({ length: totalZeros }).map((_, idx) => {
+          const zeroNumber = idx + 1;
+          const isOpened = openedZeros.includes(zeroNumber);
+          const leftPercent = (idx / (totalZeros - 1)) * 100;
+          return (
+            <div
+              key={idx}
+              className={`absolute -top-6 transform -translate-x-1/2 w-12 text-center font-bold text-sm ${
+                isOpened ? "text-green-600" : "text-gray-400"
+              }`}
+              style={{ left: `${leftPercent}%` }}
+            >
+              Zero {zeroNumber}
+              {lastOpened === zeroNumber && (
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-6 bg-yellow-400 rounded-full animate-ping opacity-70"></div>
+              )}
+              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 rounded bg-yellow-500 text-white text-xs opacity-0 group-hover:opacity-100 whitespace-nowrap">
+                {rewardsMap[zeroNumber]}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
       {/* PayPal Payment */}
@@ -114,30 +148,6 @@ export default function Home() {
           {message && <p className="mt-4 font-semibold text-gray-700">{message}</p>}
         </div>
       )}
-
-      {/* Zero display with glow animation */}
-      <div className="w-full max-w-xl bg-white p-6 rounded shadow-md mb-6">
-        <h2 className="text-2xl font-bold text-yellow-600 text-center mb-4">Zeros & Rewards</h2>
-        <div className="flex justify-between relative">
-          {Array.from({ length: totalZeros }).map((_, idx) => {
-            const zeroNumber = idx + 1;
-            const isOpened = openedZeros.includes(zeroNumber);
-            const isLast = lastOpened === zeroNumber;
-
-            return (
-              <div
-                key={idx}
-                className={`text-center font-bold transition-all duration-500 ${
-                  isOpened ? "text-green-600" : "text-gray-400"
-                } ${isLast ? "animate-ping" : ""}`}
-              >
-                Zero {zeroNumber}
-                <p className="text-xs mt-1">{rewardsMap[zeroNumber]}</p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
 
       {/* Leaderboard */}
       <div className="w-full max-w-xl bg-white p-6 rounded shadow-md">
