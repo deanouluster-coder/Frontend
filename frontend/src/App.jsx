@@ -7,9 +7,8 @@ import { getToken, demoLogin } from "./utils/auth";
 export default function App() {
   const [demoPlayers, setDemoPlayers] = useState([]);
 
-  // Auto-login for demo
   useEffect(() => {
-    demoLogin();
+    demoLogin(); // auto-login demo token
   }, []);
 
   return (
@@ -18,10 +17,11 @@ export default function App() {
         Million Zero Vault
       </h1>
 
-      {!getToken() && <Paywall />}
-
-      {getToken() && (
+      {/* Show GameInput if demo token exists */}
+      {getToken() ? (
         <GameInput demoPlayers={demoPlayers} setDemoPlayers={setDemoPlayers} />
+      ) : (
+        <Paywall />
       )}
 
       <Leaderboard demoPlayers={demoPlayers} />
