@@ -1,16 +1,32 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-export default function Leaderboard({ demoPlayers }) {
+export default function Leaderboard({ refresh }) {
+  const [players, setPlayers] = useState([]);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leaderboard`);
+        const data = await res.json();
+        if (data.success) setPlayers(data.players);
+      } catch (err) {
+        console.error("Failed to fetch leaderboard:", err);
+      }
+    };
+
+    fetchLeaderboard();
+  }, [refresh]);
+
   return (
     <div className="bg-white w-full max-w-xl rounded shadow p-4 mt-6">
       <h2 className="text-xl font-bold mb-3 text-center text-yellow-600">
         Leaderboard
       </h2>
 
-      {demoPlayers.length === 0 ? (
+      {players.length === 0 ? (
         <p className="text-center text-gray-500">No players yet</p>
       ) : (
-        demoPlayers.map((player, idx) => (
+        players.map((player, idx) => (
           <div
             key={idx}
             className="flex justify-between border-b py-1 hover:bg-yellow-50 transition-colors"
