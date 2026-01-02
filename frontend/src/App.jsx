@@ -3,7 +3,9 @@ import Leaderboard from "./components/Leaderboard";
 import GameInput from "./components/GameInput";
 import Paywall from "./components/Paywall";
 import { getToken } from "./utils/auth";
+import PlayGame from "./components/PlayGame";
 
+<PlayGame />
 export default function App() {
   const [refreshLeaderboard, setRefreshLeaderboard] = useState(false);
 
