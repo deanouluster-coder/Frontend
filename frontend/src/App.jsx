@@ -4,6 +4,9 @@ import Confetti from "react-confetti";
 import { useWindowSize } from "react-use";
 import PayPalButton from "./PayPalButton";
 
+// Global jackpot sound variable
+let jackpotSound = null;
+
 export default function Home() {
   const totalZeros = 9;
   const totalJackpot = 1000000;
@@ -58,9 +61,15 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [openedZeros]);
 
-  // Show jackpot modal if 9th zero opened
+  // Show jackpot modal & play sound if 9th zero opened
   useEffect(() => {
-    if (isJackpot) setShowJackpotModal(true);
+    if (isJackpot) {
+      setShowJackpotModal(true);
+      if (!jackpotSound) {
+        jackpotSound = new Audio("/jackpot.mp3");
+        jackpotSound.play().catch(err => console.log("Audio play error:", err));
+      }
+    }
   }, [isJackpot]);
 
   const handlePlay = async () => {
@@ -73,7 +82,7 @@ export default function Home() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/game/play`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, username: "Player1" }) // Replace with actual logged-in user
+        body: JSON.stringify({ code, username: "Player1" }) // Replace with logged-in user
       });
       const data = await res.json();
       setMessage(data.message);
@@ -86,9 +95,18 @@ export default function Home() {
 
   const handlePaymentSuccess = () => setPaid(true);
 
+  const handleCloseJackpot = () => {
+    setShowJackpotModal(false);
+    if (jackpotSound) {
+      jackpotSound.pause();
+      jackpotSound.currentTime = 0;
+      jackpotSound = null;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 p-6 flex flex-col items-center relative">
-      {/* JACKPOT Confetti */}
+      {/* Confetti for JACKPOT */}
       {isJackpot && <Confetti width={width} height={height} numberOfPieces={500} recycle={false} />}
 
       <h1 className="text-6xl font-extrabold text-yellow-600 mb-6 drop-shadow-lg animate-pulse">
@@ -175,7 +193,7 @@ export default function Home() {
         )}
       </div>
 
-      {/* Jackpot Modal */}
+      {/* JACKPOT Modal */}
       {showJackpotModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded shadow-lg text-center max-w-sm animate-scale-up">
@@ -183,7 +201,7 @@ export default function Home() {
             <p className="text-gray-700 mb-4">Congratulations! All zeros are unlocked!</p>
             <button
               className="bg-yellow-500 text-white px-6 py-2 rounded hover:bg-yellow-600"
-              onClick={() => setShowJackpotModal(false)}
+              onClick={handleCloseJackpot}
             >
               Close
             </button>
