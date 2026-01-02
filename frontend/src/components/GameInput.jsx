@@ -6,23 +6,24 @@ export default function GameInput({ onSuccess }) {
   const [msg, setMsg] = useState("");
 
   const submit = async () => {
-    if (code.length !== 3) {
-      setMsg("Enter exactly 3 digits");
-      return;
+    if (code.length !== 3) return setMsg("Enter exactly 3 digits");
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/play/guess`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`
+        },
+        body: JSON.stringify({ code })
+      });
+      const data = await res.json();
+      setMsg(data.message || "Played!");
+      if (data.success) onSuccess();
+    } catch (err) {
+      setMsg("Error connecting to server");
+      console.error(err);
     }
-
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/play/guess`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${getToken()}`
-      },
-      body: JSON.stringify({ code })
-    });
-
-    const data = await res.json();
-    setMsg(data.message || "Played");
-    if (data.success) onSuccess();
   };
 
   return (
@@ -32,11 +33,11 @@ export default function GameInput({ onSuccess }) {
         maxLength={3}
         placeholder="Enter 3-digit code"
         value={code}
-        onChange={e => setCode(e.target.value.replace(/\D/g, ""))}
+        onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
       />
       <button
         onClick={submit}
-        className="bg-yellow-500 text-white w-full py-2 rounded font-bold"
+        className="bg-yellow-500 text-white w-full py-2 rounded font-bold hover:bg-yellow-600 transition"
       >
         Play
       </button>
