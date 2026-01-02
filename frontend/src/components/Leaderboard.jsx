@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 
-export default function Leaderboard() {
-  const [players, setPlayers] = useState([]);
+export default function Leaderboard({ demoPlayers }) {
+  const [players, setPlayers] = useState(demoPlayers || []);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/leaderboard`)
-      .then((res) => res.json())
-      .then((data) => data.success && setPlayers(data.players))
-      .catch((err) => console.error(err));
+    // Optional: fetch real leaderboard from backend
+    // fetch(`${import.meta.env.VITE_API_URL}/api/leaderboard`)
+    //   .then(res => res.json())
+    //   .then(data => data.success && setPlayers(data.players))
+    //   .catch(console.error);
   }, []);
 
   return (
