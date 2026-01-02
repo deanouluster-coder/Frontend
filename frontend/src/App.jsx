@@ -1,19 +1,16 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import Leaderboard from "./components/Leaderboard";
 import GameInput from "./components/GameInput";
 import Paywall from "./components/Paywall";
-import { getToken } from "./utils/auth";
+import { getToken, demoLogin } from "./utils/auth";
 
 export default function App() {
-  const [openedZeros, setOpenedZeros] = useState([]);
+  const [demoPlayers, setDemoPlayers] = useState([]);
 
-  const refresh = () => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/play/opened-zeros`)
-      .then(r => r.json())
-      .then(d => d.success && setOpenedZeros(d.openedZeros));
-  };
-
-  useEffect(refresh, []);
+  // Auto-login for demo
+  useEffect(() => {
+    demoLogin();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center p-6">
@@ -22,10 +19,12 @@ export default function App() {
       </h1>
 
       {!getToken() && <Paywall />}
-      {getToken() && <GameInput onSuccess={refresh} />}
 
-      <Leaderboard players={[]} />
+      {getToken() && (
+        <GameInput demoPlayers={demoPlayers} setDemoPlayers={setDemoPlayers} />
+      )}
+
+      <Leaderboard demoPlayers={demoPlayers} />
     </div>
   );
 }
-console.log("API:", import.meta.env.VITE_API_URL);
