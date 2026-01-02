@@ -1,29 +1,31 @@
 import { useState } from "react";
-import { getToken } from "../utils/auth";
 
-export default function GameInput({ onSuccess }) {
+export default function GameInput({ onSuccess, demoPlayers, setDemoPlayers }) {
   const [code, setCode] = useState("");
   const [msg, setMsg] = useState("");
 
-  const submit = async () => {
+  const submit = () => {
     if (code.length !== 3) return setMsg("Enter exactly 3 digits");
 
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/play/guess`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`
-        },
-        body: JSON.stringify({ code })
-      });
-      const data = await res.json();
-      setMsg(data.message || "Played!");
-      if (data.success) onSuccess();
-    } catch (err) {
-      setMsg("Error connecting to server");
-      console.error(err);
-    }
+    // Demo behavior: randomly open a zero
+    const zeroNumber = Math.floor(Math.random() * 9) + 1;
+    setMsg(`Zero #${zeroNumber} opened!`);
+
+    // Update demo leaderboard
+    const randomUser = "DemoPlayer";
+    setDemoPlayers((prev) => {
+      const existing = prev.find(p => p.username === randomUser);
+      if (existing) {
+        return prev.map(p =>
+          p.username === randomUser ? { ...p, score: p.score + zeroNumber } : p
+        );
+      } else {
+        return [...prev, { username: randomUser, score: zeroNumber }];
+      }
+    });
+
+    if (onSuccess) onSuccess();
+    setCode("");
   };
 
   return (
@@ -33,7 +35,7 @@ export default function GameInput({ onSuccess }) {
         maxLength={3}
         placeholder="Enter 3-digit code"
         value={code}
-        onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+        onChange={e => setCode(e.target.value.replace(/\D/g, ""))}
       />
       <button
         onClick={submit}
