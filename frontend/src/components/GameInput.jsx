@@ -1,31 +1,30 @@
 import { useState } from "react";
 
-export default function GameInput({ onSuccess, demoPlayers, setDemoPlayers }) {
+export default function GameInput({ demoPlayers, setDemoPlayers }) {
   const [code, setCode] = useState("");
   const [msg, setMsg] = useState("");
 
   const submit = () => {
     if (code.length !== 3) return setMsg("Enter exactly 3 digits");
 
-    // Demo behavior: randomly open a zero
+    // Randomly pick a zero
     const zeroNumber = Math.floor(Math.random() * 9) + 1;
     setMsg(`Zero #${zeroNumber} opened!`);
 
     // Update demo leaderboard
-    const randomUser = "DemoPlayer";
+    const username = "DemoPlayer";
     setDemoPlayers((prev) => {
-      const existing = prev.find(p => p.username === randomUser);
+      const existing = prev.find(p => p.username === username);
       if (existing) {
         return prev.map(p =>
-          p.username === randomUser ? { ...p, score: p.score + zeroNumber } : p
+          p.username === username ? { ...p, score: p.score + zeroNumber } : p
         );
       } else {
-        return [...prev, { username: randomUser, score: zeroNumber }];
+        return [...prev, { username, score: zeroNumber }];
       }
     });
 
-    if (onSuccess) onSuccess();
-    setCode("");
+    setCode(""); // reset input
   };
 
   return (
