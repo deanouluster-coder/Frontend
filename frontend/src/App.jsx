@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import CountUp from "react-countup"; // animate numbers
 import PayPalButton from "./PayPalButton";
 
 export default function Home() {
@@ -23,10 +24,9 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [paid, setPaid] = useState(false);
   const [leaderboard, setLeaderboard] = useState([]);
-
   const unlockedAmount = Math.floor((openedZeros.length / totalZeros) * totalJackpot);
 
-  // Fetch leaderboard and zeros every 5 sec
+  // Fetch zeros & leaderboard every 5 seconds
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -61,7 +61,7 @@ export default function Home() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/game/play`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, username: "Player1" }) // replace username with logged-in user
+        body: JSON.stringify({ code, username: "Player1" })
       });
       const data = await res.json();
       setMessage(data.message);
@@ -76,11 +76,13 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 p-6 flex flex-col items-center">
-      <h1 className="text-6xl font-extrabold text-yellow-600 mb-6 drop-shadow-lg">Million Zero Vault</h1>
+      <h1 className="text-6xl font-extrabold text-yellow-600 mb-6 drop-shadow-lg animate-pulse">
+        Million Zero Vault
+      </h1>
 
       <div className="text-center mb-6">
         <h2 className="text-3xl font-bold text-yellow-600">
-          Jackpot: ${unlockedAmount.toLocaleString()}
+          Jackpot: <CountUp end={unlockedAmount} duration={1.5} separator="," prefix="$" />
         </h2>
         <p className="text-gray-700">{openedZeros.length} / {totalZeros} zeros opened</p>
       </div>
@@ -105,7 +107,7 @@ export default function Home() {
           />
           <button
             onClick={handlePlay}
-            className="block mt-4 bg-yellow-500 text-white px-6 py-2 rounded hover:bg-yellow-600"
+            className="block mt-4 bg-yellow-500 text-white px-6 py-2 rounded hover:bg-yellow-600 transition transform hover:-translate-y-1"
           >
             Play
           </button>
@@ -113,15 +115,22 @@ export default function Home() {
         </div>
       )}
 
-      {/* Reward / Zero display */}
+      {/* Zero display with glow animation */}
       <div className="w-full max-w-xl bg-white p-6 rounded shadow-md mb-6">
         <h2 className="text-2xl font-bold text-yellow-600 text-center mb-4">Zeros & Rewards</h2>
-        <div className="flex justify-between">
+        <div className="flex justify-between relative">
           {Array.from({ length: totalZeros }).map((_, idx) => {
             const zeroNumber = idx + 1;
             const isOpened = openedZeros.includes(zeroNumber);
+            const isLast = lastOpened === zeroNumber;
+
             return (
-              <div key={idx} className={`text-center font-bold ${isOpened ? "text-green-600" : "text-gray-400"}`}>
+              <div
+                key={idx}
+                className={`text-center font-bold transition-all duration-500 ${
+                  isOpened ? "text-green-600" : "text-gray-400"
+                } ${isLast ? "animate-ping" : ""}`}
+              >
                 Zero {zeroNumber}
                 <p className="text-xs mt-1">{rewardsMap[zeroNumber]}</p>
               </div>
@@ -138,7 +147,7 @@ export default function Home() {
         ) : (
           <ul>
             {leaderboard.map((p, i) => (
-              <li key={i} className="flex justify-between border-b py-1">
+              <li key={i} className="flex justify-between border-b py-1 hover:bg-yellow-50 transition">
                 <span>{p.username}</span>
                 <span>{p.zerosOpened} zeros</span>
               </li>
